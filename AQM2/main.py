@@ -111,3 +111,84 @@ SCV_arrival_agg = np.linalg.solve(b_matrix, a)
 
 print("SCV_arrival_agg: \n", SCV_arrival_agg)
 
+SCV_departure_agg = np.zeros([var.n])
+for i in range(var.n):
+    SCV_departure_agg[i] += (1 - (rho[i]**2)) * SCV_arrival_agg[i] + (rho[i]**2) * SCV_agg[i]
+
+print("SCV_departure_agg: \n", SCV_departure_agg)
+
+EW_Q_agg = np.zeros([var.n])
+for i in range(var.n):
+    EW_Q_agg[i] += ((SCV_arrival_agg[i] + SCV_agg[i])/2) * ((rho[i]**(np.sqrt(2*(var.servers[i] + 1))))/(var.servers[i]*(1 - rho[i]))) * expected_service_time_agg[i]
+
+print("EW_Q_agg: \n", EW_Q_agg)
+
+EW = EW_Q_agg + expected_service_time_agg
+
+print("EW: \n", EW)
+
+EL = var.gamma * EW
+
+print("EL: \n", EL)
+
+EL_Q = EL
+for i in range (var.n):
+    if var.servers[i] == np.inf:
+        continue
+    EL_Q[i] -= var.servers[i] * rho[i]
+
+print("EL_Q: \n", EL_Q)
+
+EL_Q_b = np.zeros(var.n)
+for i in range(var.n):
+    EL_Q_b[i] += (var.arrival_rate_b[i] / arrival_rate_agg[i]) * EL_Q[i]
+
+EL_Q_l = np.zeros(var.n)
+for i in range(var.n):
+    EL_Q_l[i] += (var.arrival_rate_l[i] / arrival_rate_agg[i]) * EL_Q[i]
+
+EL_Q_f = np.zeros(var.n)
+for i in range(var.n):
+    EL_Q_f[i] += (var.arrival_rate_f[i] / arrival_rate_agg[i]) * EL_Q[i]
+
+print("EL_Q_b: \n", EL_Q_b)
+print("EL_Q_l: \n", EL_Q_l)
+print("EL_Q_f: \n", EL_Q_f)
+
+EL_b = EL_Q_b
+for i in range(var.n):
+    EL_b[i] += var.arrival_rate_b[i] * var.expected_service_time_b[i]
+
+EL_l = EL_Q_l
+for i in range(var.n):
+    EL_l[i] += var.arrival_rate_l[i] * var.expected_service_time_l[i]
+
+EL_f = EL_Q_f
+for i in range(var.n):
+    EL_f[i] += var.arrival_rate_f[i] * var.expected_service_time_f[i]
+
+print("EL_b: \n", EL_b)
+print("EL_l: \n", EL_l)
+print("EL_f: \n", EL_f)
+
+EW_b = 0
+for i in range(var.n):
+    if var.arrival_rate_b[i] == 0:
+        continue
+    EW_b += var.V_b[i] * (EL_b[i] / var.arrival_rate_b[i])
+
+EW_l = 0
+for i in range(var.n):
+    if var.arrival_rate_l[i] == 0:
+        continue
+    EW_l += var.V_l[i] * (EL_l[i] / var.arrival_rate_l[i])
+
+EW_f = 0
+for i in range(var.n):
+    if var.arrival_rate_f[i] == 0:
+        continue
+    EW_f += var.V_f[i] * (EL_f[i] / var.arrival_rate_f[i])
+
+print("EW_b : \n", EW_b)
+print("EW_l : \n", EW_l)
+print("EW_f : \n", EW_f)

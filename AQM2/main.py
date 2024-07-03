@@ -159,15 +159,15 @@ print("EL_Q_f: \n", EL_Q_f)
 
 EL_b = EL_Q_b
 for i in range(var.n):
-    EL_b[i] += (var.arrival_rate_b[i] * var.expected_service_time_b[i]) / (var.servers[i] * 60)
+    EL_b[i] += var.arrival_rate_b[i] * var.expected_service_time_b[i]
 
 EL_l = EL_Q_l
 for i in range(var.n):
-    EL_l[i] += (var.arrival_rate_l[i] * var.expected_service_time_l[i]) / (var.servers[i] * 60)
+    EL_l[i] += var.arrival_rate_l[i] * var.expected_service_time_l[i]
 
 EL_f = EL_Q_f
 for i in range(var.n):
-    EL_f[i] += (var.arrival_rate_f[i] * var.expected_service_time_f[i]) / (var.servers[i] * 60)
+    EL_f[i] += var.arrival_rate_f[i] * var.expected_service_time_f[i]
 
 print("EL_b: \n", EL_b)
 print("EL_l: \n", EL_l)

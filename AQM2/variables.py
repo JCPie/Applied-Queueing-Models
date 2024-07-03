@@ -18,9 +18,9 @@ servers = [3, 1, 1, 1, 1, 1, 2, np.inf, 2, 1]
 
 batch_size = 5
 
-lam_b = 6
-lam_l = 6
-lam_f = 3
+lam_b = 6/60
+lam_l = 6/60
+lam_f = 3/60
 beta_b = lam_b/batch_size
 beta_l = lam_l/batch_size
 beta_f = lam_f/batch_size
@@ -33,21 +33,21 @@ departure_rate_b = np.array([lam_b, beta_b, 0, 0, 2 * beta_b, 0, 0, beta_b, beta
 departure_rate_l = np.array([lam_l, 0, beta_l, 0, 2 * beta_l, 0, 0, 2 * beta_l, 2 * beta_l, beta_l])
 departure_rate_f = np.array([lam_f, 0, 0, beta_f, 2 * beta_f + lam_f, lam_f, lam_f, beta_f + lam_f, beta_f + lam_f, 0])
 
-V_b = np.array([1, 1, 0, 0, 2, 0, 0, 1, 1, 1])
-V_l = np.array([1, 0, 1, 0, 2, 0, 0, 2, 2, 1])
-V_f = np.array([1, 0, 0, 1, 2, 1, 1, 2, 2, 0])
+V_b = np.array([1, 1, 0, 0, 1/5, 0, 0, 1/5, 1/5, 1/5])
+V_l = np.array([1, 0, 1, 0, 2/5, 0, 0, 2/5, 2/5, 1/5])
+V_f = np.array([1, 0, 0, 1, 6/5, 1/5, 1, 6/5, 6/5, 0])
 
 # outside_arrival_b = np.array([lam_b, 0,0,0,0,0,0,0,0,0])
 # outside_arrival_l = np.array([lam_l, 0,0,0,0,0,0,0,0,0])
 # outside_arrival_f = np.array([lam_f, 0,0,0,0,0,0,0,0,0])
 
-expected_service_time_b = np.array([8, (batch_size - 1) / lam_b, 0, 0, 0, 0, 0, 120, 18, 4])
-expected_service_time_l = np.array([8, 0, (batch_size - 1) / lam_l, 0, 0, 0, 0, 120, 18, 4])
-expected_service_time_f = np.array([8, 0, 0, (batch_size - 1) / lam_f, 0, 0, 35, 120, 6, 0])
+expected_service_time_b = np.array([8, (batch_size - 1) / (2*lam_b), 0, 0, 0, 0, 0, 120, 18, 4])
+expected_service_time_l = np.array([8, 0, (batch_size - 1) / (2*lam_l), 0, 0, 0, 0, 120, 18, 4])
+expected_service_time_f = np.array([8, 0, 0, (batch_size - 1) / (2*lam_f), 0, 0, 35, 120, 6, 0])
 
-SCV_b = np.array([3/2, 11/45, 0, 0, 0, 0, 0, 0, 13/18, 2])
-SCV_l = np.array([3/2, 0, 11/45, 0, 0, 0, 0, 0, 13/18, 2])
-SCV_f = np.array([3/2, 0, 0, 11/45, 0, 0, 1/2, 0, 1/2, 0])
+SCV_b = np.array([3/2, 22/360, 0, 0, 0, 0, 0, 0, 13/18, 2])
+SCV_l = np.array([3/2, 0, 22/360, 0, 0, 0, 0, 0, 13/18, 2])
+SCV_f = np.array([3/2, 0, 0, 22/360, 0, 0, 1/2, 0, 1/2, 0])
 
 expected_service_time_AGV = 56/13
 SCV_AGV = 463/1568

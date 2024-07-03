@@ -33,9 +33,9 @@ departure_rate_b = np.array([lam_b, beta_b, 0, 0, 2 * beta_b, 0, 0, beta_b, beta
 departure_rate_l = np.array([lam_l, 0, beta_l, 0, 2 * beta_l, 0, 0, 2 * beta_l, 2 * beta_l, beta_l])
 departure_rate_f = np.array([lam_f, 0, 0, beta_f, 2 * beta_f + lam_f, lam_f, lam_f, beta_f + lam_f, beta_f + lam_f, 0])
 
-V_b = np.array([1, 1, 0, 0, 1/5, 0, 0, 1/5, 1/5, 1/5])
-V_l = np.array([1, 0, 1, 0, 2/5, 0, 0, 2/5, 2/5, 1/5])
-V_f = np.array([1, 0, 0, 1, 6/5, 1/5, 1, 6/5, 6/5, 0])
+V_b = np.array([1, 1, 0, 0, 1/batch_size, 0, 0, 1/batch_size, 1/batch_size, 1/batch_size])
+V_l = np.array([1, 0, 1, 0, 2/batch_size, 0, 0, 2/batch_size, 2/batch_size, 1/batch_size])
+V_f = np.array([1, 0, 0, 1, 1 + 1/batch_size, 1/batch_size, 1, 1 + 1/batch_size, 1 + 1/batch_size, 0])
 
 # outside_arrival_b = np.array([lam_b, 0,0,0,0,0,0,0,0,0])
 # outside_arrival_l = np.array([lam_l, 0,0,0,0,0,0,0,0,0])

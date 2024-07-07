@@ -1,5 +1,5 @@
-import variables as var
 import numpy as np
+import variables as var
 
 arrival_rate_agg = var.arrival_rate_b + var.arrival_rate_l + var.arrival_rate_f
 
@@ -48,7 +48,7 @@ for i, SCV in enumerate(var.SCV_f):
     SCV_agg[i] += norm * (var.arrival_rate_f[i] * var.expected_service_time_f[i]**2 * (SCV + 1)) - 1/3
 
 
-SCV_agg[var.AGV] += 463/1568
+SCV_agg[var.AGV] += 463/1568 + 1
 
 print("SCV aggregated: \n", SCV_agg)
 
@@ -76,7 +76,7 @@ print("v: \n", v)
 
 rho = np.zeros([var.n])
 for i in range(var.n):
-    rho[i] += arrival_rate_agg[i] * expected_service_time_agg[i] / var.servers[i]
+    rho[i] += arrival_rate_agg[i] * expected_service_time_agg[i] / (var.servers[i] * 60)
 
 print("rho: \n", rho)
 
@@ -94,7 +94,7 @@ print("x: \n", x)
 
 a = np.zeros(var.n)
 for j in range(var.n):
-    a[j] += 1 + w[j] * (Q[0,j] * (j == var.SD) - 1)
+    a[j] += 1 + w[j] * (Q[0,j] * SCV_agg[j] - 1)
     for i in range(var.n):
         a[j] += w[j] * (Q[i,j] * ((1 - P_agg[i,j]) + P_agg[i,j] * (rho[i]**2) * x[i]))
 
@@ -117,80 +117,5 @@ for i in range(var.n):
 
 print("SCV_departure_agg: \n", SCV_departure_agg)
 
-EW_Q_agg = np.zeros([var.n])
-for i in range(var.n):
-    EW_Q_agg[i] += ((SCV_arrival_agg[i] + SCV_agg[i])/2) * ((rho[i]**(np.sqrt(2*(var.servers[i] + 1))))/(var.servers[i]*(1 - rho[i]))) * expected_service_time_agg[i]
 
-print("EW_Q_agg: \n", EW_Q_agg)
-
-EW = EW_Q_agg + expected_service_time_agg
-
-print("EW: \n", EW)
-
-EL = np.zeros(var.n)
-for i in range(var.n):
-    EL[i] += arrival_rate_agg[i] * EW[i]
-
-print("EL: \n", EL)
-
-EL_Q = EL
-for i in range (var.n):
-    if var.servers[i] == np.inf:
-        continue
-    EL_Q[i] -= var.servers[i] * rho[i]
-
-print("EL_Q: \n", EL_Q)
-
-EL_Q_b = np.zeros(var.n)
-for i in range(var.n):
-    EL_Q_b[i] += (var.arrival_rate_b[i] / arrival_rate_agg[i]) * EL_Q[i]
-
-EL_Q_l = np.zeros(var.n)
-for i in range(var.n):
-    EL_Q_l[i] += (var.arrival_rate_l[i] / arrival_rate_agg[i]) * EL_Q[i]
-
-EL_Q_f = np.zeros(var.n)
-for i in range(var.n):
-    EL_Q_f[i] += (var.arrival_rate_f[i] / arrival_rate_agg[i]) * EL_Q[i]
-
-print("EL_Q_b: \n", EL_Q_b)
-print("EL_Q_l: \n", EL_Q_l)
-print("EL_Q_f: \n", EL_Q_f)
-
-EL_b = EL_Q_b
-for i in range(var.n):
-    EL_b[i] += var.arrival_rate_b[i] * var.expected_service_time_b[i]
-
-EL_l = EL_Q_l
-for i in range(var.n):
-    EL_l[i] += var.arrival_rate_l[i] * var.expected_service_time_l[i]
-
-EL_f = EL_Q_f
-for i in range(var.n):
-    EL_f[i] += var.arrival_rate_f[i] * var.expected_service_time_f[i]
-
-print("EL_b: \n", EL_b)
-print("EL_l: \n", EL_l)
-print("EL_f: \n", EL_f)
-
-EW_b = 0
-for i in range(var.n):
-    if var.arrival_rate_b[i] == 0:
-        continue
-    EW_b += var.V_b[i] * (EL_b[i] / var.arrival_rate_b[i])
-
-EW_l = 0
-for i in range(var.n):
-    if var.arrival_rate_l[i] == 0:
-        continue
-    EW_l += var.V_l[i] * (EL_l[i] / var.arrival_rate_l[i])
-
-EW_f = 0
-for i in range(var.n):
-    if var.arrival_rate_f[i] == 0:
-        continue
-    EW_f += var.V_f[i] * (EL_f[i] / var.arrival_rate_f[i])
-
-print("EW_b : \n", EW_b)
-print("EW_l : \n", EW_l)
-print("EW_f : \n", EW_f)
+#Alg 5

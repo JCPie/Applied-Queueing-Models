@@ -14,7 +14,7 @@ Pa = 9
 
 n = len(stations)
 
-servers = [3, 1, 1, 1, 1, 1, 2, np.inf, 2, 1]
+servers = [3, np.inf, np.inf, np.inf, 1, np.inf, 2, np.inf, 2, 1]
 
 batch_size = 5
 
@@ -44,6 +44,10 @@ V_f = np.array([1, 0, 0, 1, 1 + 1/batch_size, 1/batch_size, 1, 1 + 1/batch_size,
 expected_service_time_b = np.array([8, (batch_size - 1) / (2*lam_b), 0, 0, 0, 0, 0, 120, 18, 4])
 expected_service_time_l = np.array([8, 0, (batch_size - 1) / (2*lam_l), 0, 0, 0, 0, 120, 18, 4])
 expected_service_time_f = np.array([8, 0, 0, (batch_size - 1) / (2*lam_f), 0, 0, 35, 120, 6, 0])
+
+# expected_service_time_b = np.array([8, 0.5 / lam_b, 0, 0, 0, 0, 0, 120, 18, 4])
+# expected_service_time_l = np.array([8, 0, 0.5 / lam_l, 0, 0, 0, 0, 120, 18, 4])
+# expected_service_time_f = np.array([8, 0, 0, 0.5 / lam_f, 0, 0, 35, 120, 6, 0])
 
 SCV_b = np.array([3/2, 22/360, 0, 0, 0, 0, 0, 0, 13/18, 2])
 SCV_l = np.array([3/2, 0, 22/360, 0, 0, 0, 0, 0, 13/18, 2])

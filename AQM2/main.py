@@ -48,7 +48,7 @@ for i, SCV in enumerate(var.SCV_f):
     SCV_agg[i] += norm * (var.arrival_rate_f[i] * var.expected_service_time_f[i]**2 * (SCV + 1)) - 1/3
 
 
-SCV_agg[var.AGV] += 463/1568
+SCV_agg[var.AGV] += 463/1568 + 1
 
 print("SCV aggregated: \n", SCV_agg)
 

@@ -1,11 +1,17 @@
 import numpy as np
 import variables as var
 
+
+####### AGGRAGATE ######
+
+
+# Aggregating arrival rate by summing the different classes
 arrival_rate_agg = var.arrival_rate_b + var.arrival_rate_l + var.arrival_rate_f
 
 print("lambda aggregated: \n ", arrival_rate_agg)
 
 
+# Aggregating service times and squared service times using equation 2.37 and 2.38
 expected_service_time_agg = np.zeros(var.n)
 expected_service_time_agg_sq = np.zeros(var.n)
 
@@ -21,12 +27,14 @@ for i, s in enumerate(var.expected_service_time_f):
     expected_service_time_agg[i] += (1/arrival_rate_agg[i]) * var.arrival_rate_f[i] * s
     expected_service_time_agg_sq[i] += (1 / arrival_rate_agg[i]) * var.arrival_rate_f[i] * s ** 2
 
+# Adding the aggregated service time of the AGV seperate
 expected_service_time_agg[var.AGV] += var.expected_service_time_AGV
 expected_service_time_agg_sq[var.AGV] += var.expected_service_time_AGV**2
 
 print("ES aggregated: \n", expected_service_time_agg)
 print("(ES)^2 aggregated: \n",expected_service_time_agg_sq)
 
+# Aggregating the SCVs using equation 2.39
 SCV_agg = np.zeros(var.n)
 
 for i, SCV in enumerate(var.SCV_b):
@@ -47,11 +55,12 @@ for i, SCV in enumerate(var.SCV_f):
     norm = (1/(arrival_rate_agg[i] * expected_service_time_agg_sq[i]))
     SCV_agg[i] += norm * (var.arrival_rate_f[i] * var.expected_service_time_f[i]**2 * (SCV + 1)) - 1/3
 
-
+# Adding the aggregated SCV of the AGV separate
 SCV_agg[var.AGV] += 463/1568 + 1
 
 print("SCV aggregated: \n", SCV_agg)
 
+# Aggregating the transition matrix using equation 2.40
 P_agg = np.zeros([var.n, var.n])
 for i in range(var.n):
     for j in range(var.n):
@@ -59,17 +68,27 @@ for i in range(var.n):
 
 print("P aggregated: \n", P_agg)
 
+# Rate matrix for calculating the aggregated V
 agg_rate_matrix = P_agg
 for i in range(var.n):
     agg_rate_matrix[i,:] = arrival_rate_agg[i] * agg_rate_matrix[i,:]
 print("Rate matrix: \n", agg_rate_matrix)
 
+# Calculating the aggregated visiting ratios
 V = np.zeros(var.n)
 for j in range(var.n):
     V[j] += np.sum(agg_rate_matrix[:,j]) / arrival_rate_agg[0]
 
 print("V: \n", V)
 
+
+
+####### Analysis / MVA ######
+
+
+####### ALGORITHM 5 ######
+
+# Step 1 initialization of the variables
 N = 25
 EW = np.zeros([N+1, var.n])
 Qc = np.zeros([N+1, var.n])
@@ -85,8 +104,10 @@ p = np.zeros([var.n, N+1, N+1])
 for j in range(var.n):
     p[j, 0, 0] += 1
 
-#Alg 5
+# Step 2 cycle through n starting at n=1
 for n in range(1, N+1):
+
+    # Step 3 Compute EW
     for j in range(var.n):
         for k in range(int(np.min([var.servers[j], n])), n):
             Qc[n-1, j] += p[j, k, n-1]
@@ -96,6 +117,7 @@ for n in range(1, N+1):
 
         EW[n, j] += Qc[n-1, j] * ES_rem[j] + EL_Q[n-1, j] * (expected_service_time_agg[j] / var.servers[j]) + expected_service_time_agg[j]
 
+    #Step 4 compute TH_0 and subsequently TH_i
     soujourn = 0
     for j in range(var.n):
         soujourn += (V[j] * EW[n, j])
@@ -105,6 +127,7 @@ for n in range(1, N+1):
     for j in range(1, var.n):
         TH[n, j] += V[j] * TH[n, 0]
 
+    # Step 5 compute p_j (k|n)
     for j in range(var.n):
         p[j, 0, n] = 1
         for k in range(1,n+1):
@@ -116,19 +139,30 @@ print("TH: \n", TH)
 # print("p: \n", p)
 print("ES_rem: \n", ES_rem)
 
+
+# Find the minimal required cards
+min_req_cards = 0
+
 for i, rate in enumerate(TH[:, 0]):
     if rate > arrival_rate_agg[0]:
-        print(f"Minimum required cards is: {i}")
+        min_req_cards = i
         break
 
+# Set the throughput of the complement network
 THC_M1 = TH[N, 0]
 print("TH^C_M+1 : \n", THC_M1)
 
+# Incoming lambda is the same as the rate into O
 lambda_in = arrival_rate_agg[0]
+
+# Calculate q from algorithm 7
 q = 1 - (lambda_in / THC_M1)
 print("q: \n", q)
 
 
+####### ALGORITHM 5 #######
+
+# Step 1 initialization
 EW_LD = np.zeros([N+1, var.n])
 Qc_LD = np.zeros([N+1, var.n])
 EL_Q_LD = np.zeros([N+1, var.n])
@@ -137,14 +171,24 @@ p_LD = np.zeros([var.n, N+1, N+1])
 for j in range(var.n):
     p_LD[j, 0, 0] += 1
 
+# Step 2 cycle through n starting at n = 1
 for n in range(1, N+1):
+
+    # Calculate EW_0 separately using equation 4.18
     EW_LD[n, 0] = (EL_Q_LD[n-1, 0] + Qc_LD[n-1, 0]) / lambda_in + p[0, 0, n-1] * q / lambda_in
 
+    # Step 3 calculating EW
     for j in range(1, var.n):
-        EW_LD[n, j] += expected_service_time_agg[j]
         for k in range(int(np.min([var.servers[j], n])), n):
-            EW_LD[n,j] += (k - var.servers[j] + 1) / (var.servers[j] / expected_service_time_agg[j]) * p[j, k, n-1]
+            Qc_LD[n - 1, j] += p[j, k, n - 1]
 
+        for k in range(int(np.min([var.servers[j] + 1, n])), n):
+            EL_Q_LD[n - 1, j] += (k - var.servers[j]) * p[j, k, n - 1]
+
+        EW_LD[n, j] += Qc_LD[n - 1, j] * ES_rem[j] + EL_Q_LD[n - 1, j] * (expected_service_time_agg[j] / var.servers[j]) + \
+                    expected_service_time_agg[j]
+
+    # Step 4 calculating TH_0 and subsequently TH_i
     soujourn = 0
     for j in range(var.n):
         soujourn += V[j] * EW_LD[n, j]
@@ -152,32 +196,47 @@ for n in range(1, N+1):
 
     for j in range(1, var.n):
         TH_LD[n, j] += V[j] * TH_LD[n, 0]
+
+    # Step 5 calculate p_j(k|n)
     for j in range(1, var.n):
         p_LD[j, 0, n] = 1
         for k in range(1,n+1):
             p_LD[j, k, n] = (expected_service_time_agg[j] / np.min([var.servers[j], k])) * TH_LD[n, j] * p[j, k-1, n-1]
             p_LD[j, 0, n] -= p[j, k, n]
 
+    # Calculate Q_0(n) using equation 4.19
     Qc_LD[n, 0] = (TH_LD[n, 0] / lambda_in) * (Qc_LD[n-1, 0] + p[0, 0, n-1] * q)
+
+    # Calculate p_0(0|n) using equation 4.20
     p[0, 0, n] = 1 - Qc_LD[n, 0]
+
+    # Calculate EL_0 using equation 4.21
     EL_Q_LD[n, 0] = TH_LD[n, 0] * EW_LD[n, 0]
 
 print("EW_LD: \n", EW_LD)
 print("TH_LD: \n", TH_LD)
-print(Qc_LD)
+print("QC_LD: \n", Qc_LD)
+
+
 
 ##################  DISAGRAGATE ################
+
+
+# Find rho using ES * lambda / c
 rho = np.zeros(var.n)
 for i in range(var.n):
     rho[i] = expected_service_time_agg[i] * arrival_rate_agg[i] / var.servers[i]
 print("rho: \n", rho)
 
+# Find EL using little's law and EW
 EL = np.zeros(var.n)
 for i in range(var.n):
     EL[i] += arrival_rate_agg[i] * EW_LD[N, i]
 
 print("EL: \n", EL)
+print("sum EL: \n", np.sum(EL))
 
+# Implementing EL_Q,j = EL_j - c_j rho_j
 EL_Q = EL
 for i in range (var.n):
     if var.servers[i] == np.inf:
@@ -186,6 +245,7 @@ for i in range (var.n):
 
 print("EL_Q: \n", EL_Q)
 
+# Implementing equation 2.41 for all classes
 EL_Q_b = np.zeros(var.n)
 for i in range(var.n):
     EL_Q_b[i] += (var.arrival_rate_b[i] / arrival_rate_agg[i]) * EL_Q[i]
@@ -202,6 +262,7 @@ print("EL_Q_b: \n", EL_Q_b)
 print("EL_Q_l: \n", EL_Q_l)
 print("EL_Q_f: \n", EL_Q_f)
 
+# Implementing equation 2.42 for all classes
 EL_b = EL_Q_b
 for i in range(var.n):
     EL_b[i] += var.arrival_rate_b[i] * var.expected_service_time_b[i]
@@ -218,6 +279,7 @@ print("EL_b: \n", EL_b)
 print("EL_l: \n", EL_l)
 print("EL_f: \n", EL_f)
 
+# Implementing equation 2.44 for all classes
 EW_b = 0
 for i in range(var.n):
     if var.arrival_rate_b[i] == 0:
@@ -235,6 +297,9 @@ for i in range(var.n):
     if var.arrival_rate_f[i] == 0:
         continue
     EW_f += var.V_f[i] * (EL_f[i] / var.arrival_rate_f[i])
+
+# Print answers
+print(f"Minimum required cards is: {min_req_cards}")
 
 print("EW_b : \n", EW_b)
 print("EW_l : \n", EW_l)

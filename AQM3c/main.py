@@ -61,7 +61,7 @@ SCV_agg[var.AGV] += 463/1568 + 1
 print("SCV aggregated: \n", SCV_agg)
 
 
-# Aggregating the transition matrix using formula 2.40
+# Aggregating the transition matrix using equation 2.40
 P_agg = np.zeros([var.n, var.n])
 
 for i in range(var.n):

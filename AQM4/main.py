@@ -175,7 +175,7 @@ for j in range(var.n):
 for n in range(1, N+1):
 
     # Calculate EW_0 separately using equation 4.18
-    EW_LD[n, 0] = (EL_Q_LD[n-1, 0] + Qc_LD[n-1, 0]) / lambda_in + p[0, 0, n-1] * q / lambda_in
+    EW_LD[n, 0] = (EL_Q_LD[n-1, 0] + Qc_LD[n-1, 0]) / lambda_in + p_LD[0, 0, n-1] * q / lambda_in
 
     # Step 3 calculating EW
     for j in range(1, var.n):
@@ -207,8 +207,8 @@ for n in range(1, N+1):
     # Calculate Q_0(n) using equation 4.19
     Qc_LD[n, 0] = (TH_LD[n, 0] / lambda_in) * (Qc_LD[n-1, 0] + p[0, 0, n-1] * q)
 
-    # Calculate p_0(0|n) using equation 4.20
-    p[0, 0, n] = 1 - Qc_LD[n, 0]
+    # Calculate p_LD_0(0|n) using equation 4.20
+    p_LD[0, 0, n] = 1 - Qc_LD[n, 0]
 
     # Calculate EL_0 using equation 4.21
     EL_Q_LD[n, 0] = TH_LD[n, 0] * EW_LD[n, 0]
@@ -304,3 +304,5 @@ print(f"Minimum required cards is: {min_req_cards}")
 print("EW_b : \n", EW_b)
 print("EW_l : \n", EW_l)
 print("EW_f : \n", EW_f)
+
+

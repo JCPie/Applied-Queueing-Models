@@ -1,6 +1,6 @@
 import numpy as np
 import variables as var
-
+import functions as func
 
 ####### AGGRAGATE ######
 
@@ -209,7 +209,9 @@ for n in range(1, N+1):
 
     # Calculate p_LD_0(0|n) using equation 4.20
     p_LD[0, 0, n] = 1 - Qc_LD[n, 0]
-
+    p_LD[0, 1, n] = (q / lambda_in) / np.min([var.servers[0], k]) * TH_LD[n, 0] * p[0, 1 - 1, n - 1]
+    for k in range(2, n + 1):
+        p_LD[0, k, n] = 1 / (lambda_in * np.min([var.servers[0], k])) * TH_LD[n, 0] * p[0, k - 1, n - 1]
     # Calculate EL_0 using equation 4.21
     EL_Q_LD[n, 0] = TH_LD[n, 0] * EW_LD[n, 0]
 
@@ -299,6 +301,8 @@ for i in range(var.n):
     EW_f += var.V_f[i] * (EL_f[i] / var.arrival_rate_f[i])
 
 # Print answers
+print("\n \n #### Answers for 4a ##### \n")
+
 print(f"Minimum required cards is: {min_req_cards}")
 
 print("EW_b : \n", EW_b)
@@ -306,3 +310,74 @@ print("EW_l : \n", EW_l)
 print("EW_f : \n", EW_f)
 
 
+
+###### 4b ######
+
+
+
+# Variables for EW and TH for all n for both with and without LD for all classes
+EW_LD_n_b = np.ones(N+1)
+EW_LD_n_l = np.ones(N+1)
+EW_LD_n_f = np.ones(N+1)
+EW_n_b = np.ones(N+1)
+EW_n_l = np.ones(N+1)
+EW_n_f = np.ones(N+1)
+TH_LD_n_b = np.ones(N+1)
+TH_LD_n_l = np.ones(N+1)
+TH_LD_n_f = np.ones(N+1)
+TH_n_b = np.ones(N+1)
+TH_n_l = np.ones(N+1)
+TH_n_f = np.ones(N+1)
+
+# Disaggregating the throughput for all n
+for n in range(1, N+1):
+    EW_LD_n_b[n], EW_LD_n_l[n], EW_LD_n_f[n] = func.disaggragate(EW_LD, arrival_rate_agg, expected_service_time_agg, n)
+    EW_n_b[n], EW_n_l[n], EW_n_f[n] = func.disaggragate(EW, arrival_rate_agg, expected_service_time_agg, n)
+    TH_n_b = n / EW_n_b
+    TH_n_l = n / EW_n_l
+    TH_n_f = n / EW_n_f
+    TH_LD_n_b = n / EW_LD_n_b
+    TH_LD_n_l = n / EW_LD_n_l
+    TH_LD_n_f = n / EW_LD_n_f
+
+# Stock size in batches
+S = 2
+# Tolerance for till what pi(m_hat) we go
+tol = 1e-10
+
+# Finding pi for both basic and luxury
+pi_b = func.pi(var.arrival_rate_b[0], tol, TH_n_b, S, N)
+pi_l = func.pi(var.arrival_rate_l[0], tol, TH_n_f, S, N)
+pi_LD_b = func.pi(var.arrival_rate_b[0], tol, TH_LD_n_b, S, N)
+pi_LD_l = func.pi(var.arrival_rate_l[0], tol, TH_LD_n_l, S, N)
+
+print("pi_b : \n", pi_b)
+print("pi_l : \n", pi_l)
+print("pi_LD_b : \n", pi_LD_b)
+print("pi_LD_l : \n", pi_LD_l)
+
+
+print("\n \n #### Answers for 4b ##### \n")
+# Summing from 1 to S for the FR
+print("FR basic: \n",np.sum(pi_b[0:S-1]))
+print("FR luxury: \n", np.sum(pi_l[0:S-1]))
+
+# Finding expected response time for basic
+# i = S means the stock is empty so non-zero response times
+expected_response_time_b = 0
+for i in range(S + 1, np.size(pi_LD_b)):
+    # Expected response time for different amounts in the shop, using our naive distribution
+    expected_response_time_b += pi_LD_b[i] * np.max([EW_b / np.min([i + 1, N]), EW_b - i / var.arrival_rate_b[0]])
+print("Expected response time basic: \n", expected_response_time_b)
+
+# Finding expected response time for luxury
+# i = S means the stock is empty so non-zero response times
+expected_response_time_l = 0
+for i in range(S + 1, np.size(pi_LD_l)):
+    # Expected response time for different amounts in the shop, using our naive distribution
+    # expected_response_time_l += pi_LD_l[i] * EW_l / np.min([i + 1, N])
+    expected_response_time_l += pi_LD_l[i] * np.max([EW_l / np.min([i + 1, N]), EW_l - i / var.arrival_rate_l[0]])
+print("Expected response time luxury: \n", expected_response_time_l)
+
+print("Chance of not having to wait, basic: \n ", np.sum(pi_LD_b[0:S]))
+print("Chance of not having to wait, luxury: \n ", np.sum(pi_LD_l[0:S]))
